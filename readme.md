@@ -23,8 +23,13 @@ This will create all the necessary folders, initialize airflow containers and cr
     ```bash
     docker compose up airflow-init
     ```
+4. Run liquibase update. Execute from project root directory
 
-4. Install python 3.11 dependencies (recommended to use a virtual environment) for development
+    ```bash
+     ./liquibase/update.sh
+    ```
+
+5. Install python 3.11 dependencies (recommended to use a virtual environment) for development
 
     ```bash
     pip install -r requirements.txt
@@ -38,8 +43,83 @@ Run docker compose
 docker compose up -d
 ```
 
+To stop everything
+
+```bash
+docker compose stop
+```
+
+To clean project schema
+
+```bash
+./liquibase/dropProject.sh
+```
+
 To clean up everything
 
 ```bash
-docker compose down --volumes --remove-orphans --network
+docker compose down --volumes --remove-orphans
 ```
+
+## DW schema
+
+### Fact
+
+#### Submission
+* id
+* versionId (FK version)
+* summaryId (FK summary)
+* submitterId (FK author)
+* paperId
+* date
+* title
+
+### Dimensions
+
+#### Version
+* id
+* number
+* creationDate
+
+#### Author
+* id
+* name
+* email
+* affiliation
+
+#### Author to submission
+* authorId (FK author)
+* submissionId (FK submission)
+
+#### Citation
+* id
+* title
+* year
+* publisher
+
+#### Citation to submission
+* citationId (FK citation)
+* submissionId (FK submission)
+
+#### Author to citation
+* authorId (FK author)
+* citationId (FK citation)
+
+#### Summary
+* id
+* pages
+* figures
+* category
+* abstract
+
+
+## Pipeline
+
+1. File watch to trigger pipeline
+2. Python task to read line by line from file and deserialize to object, divide to batch of objects
+3. Python task to filter out objects that are not valid
+4. Python task to transform object to star schema model
+5. Python task to transform object to graph db model
+6. Python task to enrich from external source
+7. Postgres insert task
+8. Neo4j insert task

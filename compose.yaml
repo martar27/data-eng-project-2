@@ -55,10 +55,10 @@ x-airflow-common:
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@dwh_pg/dwh_pg
     # For backward compatibility, with Airflow <2.3
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@dwh_pg/dwh_pg
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@dwh_pg/dwh_pg
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -84,18 +84,18 @@ x-airflow-common:
     &airflow-common-depends-on
     redis:
       condition: service_healthy
-    postgres:
+    dwh_pg:
       condition: service_healthy
   networks:
-    - airflow
+    - dwh
 
 services:
-  postgres:
+  dwh_pg:
     image: postgres:13
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-airflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
-      POSTGRES_DB: ${POSTGRES_DB:-airflow}
+      POSTGRES_DB: ${POSTGRES_DB:-dwh_pg}
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
       - ./setup/create_project_schema.sql:/docker-entrypoint-initdb.d/create_project_schema.sql
@@ -108,7 +108,7 @@ services:
     ports:
       - ${POSTGRES_POST:-5432}:5432
     networks:
-      - airflow
+      - dwh
 
   redis:
     image: redis:latest
@@ -122,7 +122,7 @@ services:
       start_period: 30s
     restart: unless-stopped
     networks:
-      - airflow
+      - dwh
 
   airflow-webserver:
     <<: *airflow-common
@@ -307,8 +307,21 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.6.0
+    tty: true
+    volumes:
+      - ./dbt:/usr/app
+      - ./.dbt:/root/.dbt
+    entrypoint: bash
+    restart: unless-stopped
+    ports:
+      - "18080:8080"
+    networks:
+      - dwh
+
 volumes:
   postgres-db-volume:
 
 networks:
-  airflow:
+  dwh:

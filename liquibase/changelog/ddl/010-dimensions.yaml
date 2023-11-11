@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-authors-table
+      author: herman
+      changes:
+        - createTable:
+            tableName: author
+            remarks: Author dimension table
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: text
+                  constraints:
+                    nullable: false

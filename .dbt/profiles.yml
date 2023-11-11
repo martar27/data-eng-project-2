@@ -1,0 +1,12 @@
+data_eng_project:
+  outputs:
+    dev:
+      type: postgres
+      threads: 4
+      host: dwh_pg
+      port: 5432
+      user: dwh_user
+      pass: dwh_user
+      dbname: dwh_pg
+      schema: project
+  target: dev

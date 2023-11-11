@@ -1,6 +1,14 @@
 # Airflow
 airflow/logs/**
 
+# dbt
+dbt/logs/**
+dbt/target/**
+.dbt/.user.yml
+
+# data
+archive/arxiv-metadata-oai-snapshot.json
+
 # IDEs
 .idea/
 .iml
