@@ -113,6 +113,22 @@ docker compose down --volumes --remove-orphans
 * abstract
 
 
+### Graph
+
+#### Paper
+* id
+* title
+
+#### Author
+* name
+* email
+
+#### Authored Author -> Paper 
+* date
+
+#### Submitted Author -> Paper
+* date
+
 ## Pipeline
 
 1. File watch to trigger pipeline

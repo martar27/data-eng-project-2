@@ -320,8 +320,22 @@ services:
     networks:
       - dwh
 
+  dwh_neo4j:
+    image: neo4j:4.4.27
+    volumes:
+      - dwh-neo4j-volume:/data
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/dwh_user}
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - dwh
+
 volumes:
   postgres-db-volume:
+  dwh-neo4j-volume:
 
 networks:
   dwh:
