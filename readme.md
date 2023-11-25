@@ -41,8 +41,8 @@ This will create all the necessary folders, initialize airflow containers and cr
     source data_eng_project/bin/activate
     python --version #Check that the virtual env is using 3.11.x
     pip install -r requirements.txt
-   # When done working in virtual env, exit virtual env: deactivate
-   ```
+    #When done working in virtual env, exit virtual env: deactivate
+    ```
 
 ### Running locally
 
