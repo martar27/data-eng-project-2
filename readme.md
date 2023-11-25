@@ -30,10 +30,19 @@ This will create all the necessary folders, initialize airflow containers and cr
     ```
 
 5. Install python 3.11 dependencies (recommended to use a virtual environment) for development
-
     ```bash
     pip install -r requirements.txt
     ```
+
+  * Optional but recommended to use virtualenv(MacOS)
+    ```bash
+    homebrew install virtualenv
+    virtualenv -p python3.11 data_eng_project
+    source data_eng_project/bin/activate
+    python --version #Check that the virtual env is using 3.11.x
+    pip install -r requirements.txt
+   # When done working in virtual env, exit virtual env: deactivate
+   ```
 
 ### Running locally
 
