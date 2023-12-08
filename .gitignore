@@ -1,5 +1,6 @@
 # Airflow
 airflow/logs/**
+airflow/data/sql/
 
 # dbt
 dbt/logs/**
