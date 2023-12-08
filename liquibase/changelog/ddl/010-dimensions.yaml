@@ -1,11 +1,31 @@
 databaseChangeLog:
   - changeSet:
-      id: create-authors-table
-      author: herman
+      id: create-version-table
+      author: Kaspar
+      changes:
+        - createTable:
+            tableName: version
+            remarks: Table for storing version information
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: number
+                  type: varchar(255)
+              - column:
+                  name: creationDate
+                  type: timestamp
+
+  - changeSet:
+      id: create-author-table
+      author: Kaspar
       changes:
         - createTable:
             tableName: author
-            remarks: Author dimension table
+            remarks: Table for storing author information
             columns:
               - column:
                   name: id
@@ -14,6 +34,173 @@ databaseChangeLog:
                     primaryKey: true
               - column:
                   name: name
-                  type: text
+                  type: varchar(255)
                   constraints:
                     nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: affiliation
+                  type: varchar(255)
+  - changeSet:
+      id: create-summary-table
+      author: [ your name or identifier ]
+      changes:
+        - createTable:
+            tableName: summary
+            remarks: Table for storing summary information
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: pages
+                  type: integer
+              - column:
+                  name: figures
+                  type: integer
+              - column:
+                  name: category
+                  type: varchar(255)
+              - column:
+                  name: abstract
+                  type: text
+
+  - changeSet:
+      id: create-citation-table
+      author: [ your name or identifier ]
+      changes:
+        - createTable:
+            tableName: citation
+            remarks: Table for storing citation information
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: title
+                  type: varchar(255)
+              - column:
+                  name: year
+                  type: integer
+              - column:
+                  name: publisher
+                  type: varchar(255)
+
+  - changeSet:
+      id: create-submission-table
+      author: [ your name or identifier ]
+      changes:
+        - createTable:
+            tableName: submission
+            remarks: Table for storing submission information
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: versionId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_version
+                    references: version(id)
+              - column:
+                  name: summaryId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_summary
+                    references: summary(id)
+              - column:
+                  name: submitterId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_author
+                    references: author(id)
+              - column:
+                  name: paperId
+                  type: uuid
+              - column:
+                  name: date
+                  type: timestamp
+              - column:
+                  name: title
+                  type: varchar(255)
+
+  - changeSet:
+      id: create-author-submission-table
+      author: [ your name or identifier ]
+      changes:
+        - createTable:
+            tableName: author_submission
+            remarks: Associative table between authors and submissions
+            columns:
+              - column:
+                  name: authorId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_author
+                    references: author(id)
+                    primaryKey: true
+              - column:
+                  name: submissionId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_submission
+                    references: submission(id)
+                    primaryKey: true
+
+  - changeSet:
+      id: create-citation-submission-table
+      author: [ your name or identifier ]
+      changes:
+        - createTable:
+            tableName: citation_submission
+            remarks: Associative table between citations and submissions
+            columns:
+              - column:
+                  name: citationId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_citation
+                    references: citation(id)
+                    primaryKey: true
+              - column:
+                  name: submissionId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_submission
+                    references: submission(id)
+                    primaryKey: true
+
+  - changeSet:
+      id: create-author-citation-table
+      author: [ your name or identifier ]
+      changes:
+        - createTable:
+            tableName: author_citation
+            remarks: Associative table between authors and citations
+            columns:
+              - column:
+                  name: authorId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_author
+                    references: author(id)
+                    primaryKey: true
+              - column:
+                  name: citationId
+                  type: uuid
+                  constraints:
+                    foreignKeyName: fk_citation
+                    references: citation(id)
+                    primaryKey: true
+
