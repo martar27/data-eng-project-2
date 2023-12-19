@@ -31,7 +31,7 @@ process_submissions = DAG(
 input_json_sensor = FileSensor(
   task_id="input_json_sensor",
   dag=process_submissions,
-  fs_conn_id="data_folder_connection",
+  fs_conn_id="data_dir",
   filepath=INPUT_FOLDER,
   mode='poke',
   poke_interval=timedelta(seconds=10)
@@ -52,7 +52,7 @@ process_json = PythonOperator(
 load_submissions = PostgresOperator(
   task_id='load_submissions',
   dag=process_submissions,
-  postgres_conn_id='dwh_pg_connection',
+  postgres_conn_id='dwh_pg',
   autocommit=True,
   sql='insert-submissions.sql'  # would be nice to push sql file name with timestamp to xcom and use here, but looks lika a bug with PostgresOperator
 )
