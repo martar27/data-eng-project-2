@@ -1,6 +1,7 @@
 # Airflow
 airflow/logs/**
 airflow/data/sql/
+airflow/data/kaggle_data/
 
 # dbt
 dbt/logs/**

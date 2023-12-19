@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 
 from airflow import DAG
@@ -13,16 +14,15 @@ DEFAULT_ARGS = {
   'retries': 0
 }
 
-DATA_FOLDER = '/tmp/data'
-INPUT_FOLDER = DATA_FOLDER + '/input'
-SQL_FOLDER = DATA_FOLDER + '/sql'
+INPUT_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'input')
+SQL_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'sql')
 
 process_submissions = DAG(
   dag_id='process_submissions',
   schedule_interval='* * * * *',  # execute every minute
   start_date=datetime(2023, 10, 1, 0, 0, 0),
   catchup=False,
-  template_searchpath=[DATA_FOLDER, SQL_FOLDER],
+  template_searchpath=[os.getenv('DATA_FOLDER'), SQL_FOLDER],
   default_args=DEFAULT_ARGS,
   concurrency=1,
   max_active_runs=1,
@@ -54,7 +54,8 @@ load_submissions = PostgresOperator(
   dag=process_submissions,
   postgres_conn_id='dwh_pg',
   autocommit=True,
-  sql='insert-submissions.sql'  # would be nice to push sql file name with timestamp to xcom and use here, but looks lika a bug with PostgresOperator
+  sql='insert-submissions.sql'
+  # would be nice to push sql file name with timestamp to xcom and use here, but looks lika a bug with PostgresOperator
 )
 
 # TODO add task to load neo4j in parallel with pg
