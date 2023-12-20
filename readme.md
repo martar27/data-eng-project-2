@@ -81,6 +81,8 @@ docker compose down --volumes --remove-orphans
 
 ## DW schema
 
+![schema](schema.png).
+
 ### Fact
 
 #### Submission
