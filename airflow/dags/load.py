@@ -11,6 +11,11 @@ def load_submissions(submissions):
   return None
 
 
+def load_versions(versions):
+  # TODO: load versions from dataframe to star schema tables. Create SQL files for loading. Execute SQL file
+  return None
+
+
 def load_kaggle_data_chunks(connection_id, schema, kaggle_file):
   import pandas as pd
   from airflow.providers.postgres.hooks.postgres import PostgresHook
@@ -18,6 +23,7 @@ def load_kaggle_data_chunks(connection_id, schema, kaggle_file):
   # Set connection to Postgres DB
   postgres_hook = PostgresHook(connection_id)
   engine = postgres_hook.get_sqlalchemy_engine()
+  current_max_id = get_max_chunk_id(engine)
 
   # Set chunk to read and file to read from
   chunk_size = 1000
@@ -26,10 +32,10 @@ def load_kaggle_data_chunks(connection_id, schema, kaggle_file):
 
   for index, chunk in enumerate(df_chunk):
     # Convert columns
-    chunk['chunk'] = index
-    prepare_chunk(chunk)
-    chunk_precessing = create_chunk_processing_entry(index)
-    print(f"Storing chunk {index} of {chunk_precessing.head()}")
+    chunk_id = current_max_id + index + 1
+    prepare_chunk(chunk_id, chunk)
+    chunk_precessing = create_chunk_processing_entry(chunk_id)
+    print(f"Storing chunk {chunk_id} of {chunk_precessing.head()}")
     # Load data to DB
     chunk.to_sql(name='kaggle_data', con=engine, schema=schema, index=False, if_exists='append')
     chunk_precessing.to_sql(name='chunk_queue', con=engine, schema=schema, index=False, if_exists='append')
@@ -37,7 +43,7 @@ def load_kaggle_data_chunks(connection_id, schema, kaggle_file):
       break
 
 
-def prepare_chunk(chunk):
+def prepare_chunk(chunk_id, chunk):
   chunk[
     ['id', 'submitter', 'authors', 'title', 'comments', 'journal-ref', 'doi', 'report-no', 'categories', 'license',
      'abstract']] = \
@@ -46,6 +52,7 @@ def prepare_chunk(chunk):
        'abstract']].astype(str)
   chunk['versions'] = chunk['versions'].apply(json.dumps)
   chunk['authors_parsed'] = chunk['authors_parsed'].apply(json.dumps)
+  chunk['chunk'] = chunk_id
 
 
 def create_chunk_processing_entry(chunk_id):
@@ -53,6 +60,16 @@ def create_chunk_processing_entry(chunk_id):
   chunk_processing = pd.DataFrame(
     {"id": [chunk_id], "status": ["pending"], "created_at": [pd.Timestamp.now()], "updated_at": [pd.Timestamp.now()]})
   return chunk_processing
+
+
+def get_max_chunk_id(engine):
+  with engine.connect() as con:
+    rs = con.execute('select max(id) from project.chunk_queue')
+    for row in rs:
+      if row[0] is None:
+        return 0
+      else:
+        return row[0]
 
 
 def write_submissions_sql(path, submissions):

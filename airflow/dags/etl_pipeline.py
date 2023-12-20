@@ -2,10 +2,6 @@ import os
 from datetime import datetime
 
 from airflow.decorators import dag, task
-from airflow.operators.python import ShortCircuitOperator
-from airflow.providers.postgres.operators.postgres import PostgresOperator
-
-from etl import process_authors, process_submissions, process_versions, process_citations
 
 default_args = {
   'owner': 'DWH',
@@ -30,6 +26,11 @@ SQL_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'sql')
   template_searchpath=[os.getenv('DATA_FOLDER'), SQL_FOLDER],
 )
 def etl_submissions():
+  from airflow.operators.python import ShortCircuitOperator
+  from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+  from etl import process_authors, process_submissions, process_versions, process_citations
+
   @task()
   def extract_chunk():
     pg_operator = PostgresOperator(

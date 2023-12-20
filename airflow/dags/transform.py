@@ -15,9 +15,9 @@ def transform_authors(raw_authors):
   return raw_authors
 
 
-def filter_submissions(submissions):
+def filter_submissions(raw_submissions):
   # TODO: data cleaning
-  return submissions
+  return raw_submissions
 
 
 def transform_submissions(raw_submissions):
@@ -26,7 +26,6 @@ def transform_submissions(raw_submissions):
 
 
 def to_submission(raw_submission):
-  # TODO: maybe do enrichment here?
   versions = [Version(v.version, parse_date_time(v.created)) for v in raw_submission.versions]
   authors = [Author(' '.join(a), '', '') for a in raw_submission.authors_parsed]
   return Submission(raw_submission.id, raw_submission.title, versions, authors)
@@ -34,3 +33,8 @@ def to_submission(raw_submission):
 
 def parse_date_time(value):
   datetime.strptime(value, date_time_format).isoformat()
+
+
+def transform_versions(raw_versions):
+  # TODO: transform versions to star schema shape.
+  return raw_versions
