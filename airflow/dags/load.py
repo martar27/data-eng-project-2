@@ -1,9 +1,22 @@
 import json
+import os
+
+SQL_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'sql')
 
 
 def load_authors(authors):
   # TODO: load authors from dataframe to star schema tables. Create SQL files for loading. Execute SQL file. Load to graph database.
-  return None
+  with open(SQL_FOLDER + '/authors.sql', 'w') as f:
+    for author in authors:
+      values = ','.join([f'(\'{alias}\', \'{author.id}\')' for alias in author.sanitized_aliases()])
+      f.write(
+        f'INSERT INTO project.author\n'
+        f'(id, name)\n'
+        f'VALUES (\'{author.id}\', \'{author.sanitized_name()}\');\n'
+        f'INSERT INTO project.author_alias\n'
+        f'(name, author_id)\n'
+        f'VALUES {values};\n'
+      )
 
 
 def load_submissions(submissions):
@@ -26,7 +39,7 @@ def load_kaggle_data_chunks(connection_id, schema, kaggle_file):
   current_max_id = get_max_chunk_id(engine)
 
   # Set chunk to read and file to read from
-  chunk_size = 1000
+  chunk_size = 50
   chunk_count = 2
   df_chunk = pd.read_json(kaggle_file, lines=True, chunksize=chunk_size)
 

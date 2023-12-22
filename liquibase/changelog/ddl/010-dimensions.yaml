@@ -29,8 +29,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: serial
-                  autoIncrement: true
+                  type: uuid
                   constraints:
                     primaryKey: true
               - column:
@@ -42,7 +41,7 @@ databaseChangeLog:
                   name: email
                   type: varchar(255)
                   constraints:
-                    nullable: false
+                    nullable: true
               - column:
                   name: affiliation
                   type: varchar(255)
@@ -122,7 +121,7 @@ databaseChangeLog:
                     references: summary(id)
               - column:
                   name: submitterId
-                  type: integer
+                  type: uuid
                   constraints:
                     foreignKeyName: fk_author
                     references: author(id)
@@ -146,7 +145,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: authorId
-                  type: integer
+                  type: uuid
                   constraints:
                     foreignKeyName: fk_author
                     references: author(id)
@@ -192,7 +191,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: authorId
-                  type: integer
+                  type: uuid
                   constraints:
                     foreignKeyName: fk_author
                     references: author(id)
@@ -204,4 +203,40 @@ databaseChangeLog:
                     foreignKeyName: fk_citation
                     references: citation(id)
                     primaryKey: true
-
+  - changeSet:
+      id: create-author-alias-table
+      author: Herman
+      changes:
+        - createTable:
+            tableName: author_alias
+            remarks: Table for storing author name aliases
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    autoIncrement: true
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: author_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_author
+                    references: author(id)
+  - changeSet:
+      id: create-author-alias-index
+      author: Herman
+      changes:
+          - createIndex:
+              indexName: author_alias_name_idx
+              tableName: author_alias
+              unique: true
+              columns:
+              - column:
+                  name: name
