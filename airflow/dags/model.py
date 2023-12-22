@@ -1,3 +1,6 @@
+import uuid
+
+
 class Version:
   def __init__(self, number, created):
     self.number = number
@@ -5,10 +8,18 @@ class Version:
 
 
 class Author:
-  def __init__(self, name, email, affiliation):
+  def __init__(self, name, email, affiliation, aliases):
+    self.id = uuid.uuid4()
     self.name = name
     self.email = email
     self.affiliation = affiliation
+    self.aliases = aliases
+
+  def sanitized_name(self):
+    return self.name.replace('\'', '').replace('\"', '')
+
+  def sanitized_aliases(self):
+    return [alias[0].replace('\'', '').replace('\"', '') for alias in self.aliases]
 
 
 class Submission:

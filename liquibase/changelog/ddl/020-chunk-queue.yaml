@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-chunk-queue-table
+      author: Herman
+      changes:
+        - createTable:
+            tableName: chunk_queue
+            remarks: Table for storing chunk processing state
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: status
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+              - column:
+                  name: updated_at
+                  type: timestamp
