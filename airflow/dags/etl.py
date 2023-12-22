@@ -3,7 +3,7 @@ from airflow.operators.python import get_current_context
 
 from extract import extract_authors, extract_submissions, extract_versions
 from transform import filter_authors, transform_authors, filter_submissions, transform_submissions, transform_versions
-from load import load_authors, load_versions
+from load import load_authors, load_versions, load_submissions
 
 
 @task()
@@ -12,7 +12,7 @@ def process_authors():
   raw_authors = extract_authors(chunk_id)
   raw_authors = filter_authors(raw_authors)
   authors = transform_authors(raw_authors)
-  load_authors(authors)
+  load_authors(authors, chunk_id)
 
 
 @task()
@@ -21,7 +21,7 @@ def process_submissions():
   raw_submissions = extract_submissions(chunk_id)
   raw_submissions = filter_submissions(raw_submissions)
   submissions = transform_submissions(raw_submissions)
-  load_authors(submissions)
+  load_submissions(submissions)
 
 
 @task()

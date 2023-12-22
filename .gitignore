@@ -1,7 +1,8 @@
 # Airflow
 airflow/logs/**
-airflow/data/sql/
+airflow/data/sql/*.sql
 airflow/data/kaggle_data/
+airflow/data/neo4j/*.csv
 
 # dbt
 dbt/logs/**
