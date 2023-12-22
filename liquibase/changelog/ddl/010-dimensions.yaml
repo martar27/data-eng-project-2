@@ -240,3 +240,16 @@ databaseChangeLog:
               columns:
               - column:
                   name: name
+
+  - changeSet:
+      id: make-author-name-unique
+      author: Herman
+      changes:
+        - addUniqueConstraint:
+            tableName: author
+            columnNames: name
+            constraintName: author_name_unique
+        - addUniqueConstraint:
+            tableName: author_alias
+            columnNames: name
+            constraintName: author_alias_name_unique

@@ -11,7 +11,6 @@ date_time_format = '%a, %d %b %Y %H:%M:%S %Z'
 
 
 def filter_authors(raw_authors):
-  # TODO: clean authors. Remove empty names. Return cleaned dataframe
   return raw_authors.dropna()
 
 

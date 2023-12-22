@@ -1,6 +1,8 @@
 apache-airflow==2.7.2
+apache-airflow-providers-neo4j
 kaggle
 pandas
 numpy
 Levenshtein
 scipy
+neo4j
