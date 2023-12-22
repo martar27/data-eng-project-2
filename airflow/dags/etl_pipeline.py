@@ -13,7 +13,16 @@ default_args = {
 
 INPUT_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'input')
 SQL_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'sql')
+NEO4J_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'neo4j')  
 
+# define custom function to load data into Neo4j
+def load_into_neo4j(uri, user, password, file_path):
+    driver = GraphDatabase.driver(uri, auth=(user, password))
+    with driver.session() as session:
+        with session.begin_transaction() as tx:
+            query = open(file_path, 'r').read()
+            tx.run(query)
+    driver.close()
 
 @dag(
   default_args=default_args,
@@ -52,6 +61,14 @@ def etl_submissions():
     )
     return pg_operator.execute({})
 
+  @task()
+  def load_into_neo4j_task():
+    uri = os.getenv('NEO4J_URI', 'if_missing_uri')
+    user = os.getenv('NEO4J_USER', 'if_missing_user')
+    password = os.getenv('NEO4J_PASSWORD', 'if_missing_password')
+    file_path = os.path.join(NEO4J_FOLDER, 'neo4j_query.cql')
+    load_into_neo4j(uri, user, password, file_path)
+
   def chunk_in_xcom(**kwargs):
     chunk = kwargs["ti"].xcom_pull(task_ids='extract_chunk', key='return_value')
     return len(chunk) > 0
@@ -65,11 +82,12 @@ def etl_submissions():
   process_submissions_task = process_submissions()
   process_versions_task = process_versions()
   process_citations_task = process_citations()
+  neo4j_task = load_into_neo4j_task()
   complete_chunk_task = complete_chunk()
 
   extract_chunk_task >> check_for_chunks_to_process >> process_authors_task >> process_submissions_task >> [
     process_versions_task,
-    process_citations_task] >> complete_chunk_task
+    process_citations_task, neo4j_task] >> complete_chunk_task
 
 
 etl_submissions()
