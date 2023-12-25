@@ -32,10 +32,24 @@ def load_authors(authors, chunk_id):
   execute_neo4j(
     "LOAD CSV WITH HEADERS FROM 'file:///" + f'/authors_{chunk_id}.csv' + "' AS csvLine MERGE (p:Author {name: csvLine.name}) ON CREATE SET p.id = csvLine.id")
 
+# TODO: Load submission to graph database.
+def load_submissions(submissions, chunk_id):
+  sql_file = SQL_FOLDER + f'/submissions_{chunk_id}.sql'
+  with open(sql_file, 'w') as f:
+    for submission in submissions:
+      title_escaped = escape_sql_string(submission.title)
+      abstract_escaped = escape_sql_string(submission.abstract)
+      f.write(
+        f"INSERT INTO project.summary (id, abstract, category)\n"
+        f"VALUES ('{submission.summary_id}', '{abstract_escaped}', '{submission.categories}') ON CONFLICT (id) DO NOTHING;\n"
+        f"INSERT INTO project.submission (id, doi, title, date, summary_id)\n"
+        f"VALUES ('{submission.id}', '{submission.doi}', '{title_escaped}', '{submission.update_date}', '{submission.summary_id}') ON CONFLICT (id) DO NOTHING;\n"
+      )
+  execute_sql(sql_file)
 
-def load_submissions(submissions):
-  # TODO: load submissions from dataframe to star schema tables. Create SQL files for loading. Execute SQL file. Load to graph database.
-  return None
+def escape_sql_string(value):
+  """Escape single quotes in a string for SQL insertion."""
+  return value.replace("'", "''")
 
 
 def load_versions(versions):

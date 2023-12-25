@@ -23,8 +23,11 @@ class Author:
 
 
 class Submission:
-  def __init__(self, paper_id, title, versions, authors):
-    self.paper_id = paper_id
+  def __init__(self, doi, title, update_date, abstract, categories):
+    self.id = uuid.uuid4()
+    self.doi = doi
     self.title = title
-    self.versions = versions
-    self.authors = authors
+    self.update_date = update_date
+    self.summary_id = uuid.uuid4()
+    self.abstract = abstract
+    self.categories = categories
