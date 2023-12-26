@@ -15,6 +15,7 @@ def filter_authors(raw_authors):
 
 
 def transform_authors(raw_authors):
+  print(raw_authors["authors_parsed"])
   all_authors = raw_authors["authors_parsed"].apply(literal_eval).explode().apply(lambda names: ' '.join(names[1:]) + names[0]).to_numpy()
   all_submitters = raw_authors["submitter"].to_numpy()
   all_names = np.unique(np.concatenate((all_authors, all_submitters))).reshape(-1, 1)
@@ -33,19 +34,22 @@ def transform_authors(raw_authors):
 
 
 def filter_submissions(raw_submissions):
-  # TODO: data cleaning
-  return raw_submissions
+  filtered = raw_submissions.dropna()
+  filtered = filtered[filtered['doi'] != 'None']
+  filtered['doi'] = filtered['doi'].apply(lambda x: x.split()[-1] if x else x) # Split the DOI string by whitespace and select the last DOI
+  return filtered
 
 
 def transform_submissions(raw_submissions):
-  # TODO: to star schema objects
-  return [to_submission(raw_submission) for raw_submission in raw_submissions]
-
+  return [to_submission(raw_submission) for _, raw_submission in raw_submissions.iterrows()]
 
 def to_submission(raw_submission):
-  versions = [Version(v.version, parse_date_time(v.created)) for v in raw_submission.versions]
-  authors = [Author(' '.join(a), '', '') for a in raw_submission.authors_parsed]
-  return Submission(raw_submission.id, raw_submission.title, versions, authors)
+  doi = raw_submission['doi']
+  title = raw_submission['title']
+  update_date = raw_submission['update_date']
+  abstract = raw_submission['abstract']
+  categories = raw_submission['categories']
+  return Submission(doi, title, update_date, abstract, categories)
 
 
 def parse_date_time(value):

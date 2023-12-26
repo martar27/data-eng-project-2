@@ -21,7 +21,7 @@ def process_submissions():
   raw_submissions = extract_submissions(chunk_id)
   raw_submissions = filter_submissions(raw_submissions)
   submissions = transform_submissions(raw_submissions)
-  load_submissions(submissions)
+  load_submissions(submissions, chunk_id)
 
 
 @task()
