@@ -6,3 +6,4 @@ numpy
 Levenshtein
 scipy
 neo4j
+crossrefapi
