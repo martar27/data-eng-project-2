@@ -47,7 +47,7 @@ databaseChangeLog:
                   type: varchar(255)
   - changeSet:
       id: create-summary-table
-      author: [ your name or identifier ]
+      author: Kaspar Metsa
       changes:
         - createTable:
             tableName: summary
@@ -70,10 +70,9 @@ databaseChangeLog:
               - column:
                   name: abstract
                   type: text
-
   - changeSet:
       id: create-citation-table
-      author: [ your name or identifier ]
+      author: Kaspar Metsa
       changes:
         - createTable:
             tableName: citation
@@ -96,7 +95,7 @@ databaseChangeLog:
 
   - changeSet:
       id: create-submission-table
-      author: [ your name or identifier ]
+      author: Kaspar Metsa
       changes:
         - createTable:
             tableName: submission
@@ -114,9 +113,10 @@ databaseChangeLog:
                     foreignKeyName: fk_version
                     references: version(id)
               - column:
-                  name: summaryId
+                  name: summary_id
                   type: uuid
                   constraints:
+                    nullable: false
                     foreignKeyName: fk_summary
                     references: summary(id)
               - column:
@@ -126,18 +126,18 @@ databaseChangeLog:
                     foreignKeyName: fk_author
                     references: author(id)
               - column:
-                  name: paperId
-                  type: uuid
+                  name: doi
+                  type: varchar(255)
               - column:
                   name: date
-                  type: timestamp
+                  type: DATE
               - column:
                   name: title
                   type: varchar(255)
 
   - changeSet:
       id: create-author-submission-table
-      author: [ your name or identifier ]
+      author: Kaspar Metsa
       changes:
         - createTable:
             tableName: author_submission
@@ -160,7 +160,7 @@ databaseChangeLog:
 
   - changeSet:
       id: create-citation-submission-table
-      author: [ your name or identifier ]
+      author: Kaspar Metsa
       changes:
         - createTable:
             tableName: citation_submission
@@ -183,7 +183,7 @@ databaseChangeLog:
 
   - changeSet:
       id: create-author-citation-table
-      author: [ your name or identifier ]
+      author: Kaspar Metsa
       changes:
         - createTable:
             tableName: author_citation

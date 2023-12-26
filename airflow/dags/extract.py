@@ -4,7 +4,7 @@ def extract_authors(chunk_id):
 
 
 def extract_submissions(chunk_id):
-  sql = f'select * from project.kaggle_data where chunk = {chunk_id}'
+  sql = f'select doi, title, update_date, abstract, categories from project.kaggle_data where chunk = {chunk_id}'
   return select_as_df(sql)
 
 
