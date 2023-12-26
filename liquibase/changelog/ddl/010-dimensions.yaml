@@ -266,3 +266,190 @@ databaseChangeLog:
             columnName: versionId
         - dropTable:
             tableName: version
+
+  - changeSet:
+      id: add-created-at-column
+      author: Herman
+      changes:
+        - addColumn:
+            tableName: submission
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: citation
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: summary
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author_alias
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author_citation
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author_submission
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: citation_submission
+            columns:
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: add-updated-at-column
+      author: Herman
+      changes:
+        - addColumn:
+            tableName: submission
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: citation
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: summary
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author_alias
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author_citation
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: author_submission
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: citation_submission
+            columns:
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: make-doi-unique
+      author: Herman
+      changes:
+        - addUniqueConstraint:
+            tableName: submission
+            columnNames: doi
+            constraintName: submission_doi_unique
+
+  - changeSet:
+      id: create-author-name-index
+      author: Herman
+      changes:
+        - createIndex:
+            indexName: author_name_idx
+            tableName: author
+            unique: true
+            columns:
+              - column:
+                  name: name
+
+  - changeSet:
+      id: create-submission-doi-index
+      author: Herman
+      changes:
+        - createIndex:
+            indexName: submission_doi_idx
+            tableName: submission
+            unique: true
+            columns:
+              - column:
+                  name: doi

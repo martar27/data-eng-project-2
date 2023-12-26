@@ -22,10 +22,10 @@ def load_authors(authors, chunk_id):
       f.write(
         f'INSERT INTO project.author\n'
         f'(id, name)\n'
-        f'VALUES (\'{author.id}\', \'{author.sanitized_name()}\') ON CONFLICT (name) DO NOTHING;\n'
+        f'VALUES (\'{author.id}\', \'{author.sanitized_name()}\') ON CONFLICT (name) DO UPDATE SET name = excluded.name ;\n'
         f'INSERT INTO project.author_alias\n'
         f'(name, author_id)\n'
-        f'VALUES {values} ON CONFLICT (name) DO NOTHING;\n'
+        f'VALUES {values} ON CONFLICT (name) DO UPDATE SET name = excluded.name;\n'
       )
 
   execute_sql(sql_file)
@@ -41,9 +41,9 @@ def load_submissions(submissions, chunk_id):
       abstract_escaped = escape_sql_string(submission.abstract)
       f.write(
         f"INSERT INTO project.summary (id, abstract, category)\n"
-        f"VALUES ('{submission.summary_id}', '{abstract_escaped}', '{submission.categories}') ON CONFLICT (id) DO NOTHING;\n"
+        f"VALUES ('{submission.summary_id}', '{abstract_escaped}', '{submission.categories}') ON CONFLICT (id) DO UPDATE SET category = excluded.category;\n"
         f"INSERT INTO project.submission (id, doi, title, date, summary_id)\n"
-        f"VALUES ('{submission.id}', '{submission.doi}', '{title_escaped}', '{submission.update_date}', '{submission.summary_id}') ON CONFLICT (id) DO NOTHING;\n"
+        f"VALUES ('{submission.id}', '{submission.doi}', '{title_escaped}', '{submission.update_date}', '{submission.summary_id}') ON CONFLICT (doi) DO UPDATE SET doi = excluded.doi, title = excluded.title, date = excluded.date;\n"
       )
   execute_sql(sql_file)
 
@@ -125,17 +125,3 @@ def get_max_chunk_id(engine):
         return 0
       else:
         return row[0]
-
-
-def write_submissions_sql(path, submissions):
-  # TODO: saving all objects
-  # TODO: getting foreign keys for fact table
-  # TODO: make author name unique, allow failure on duplicate insert
-  with open(path, 'w') as f:
-    for submission in submissions:
-      for author in submission.authors:
-        f.write(
-          f'INSERT INTO project.author\n'
-          f'(name)\n'
-          f'VALUES (\'{author.name}\');\n'
-        )

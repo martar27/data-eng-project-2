@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-created-at-triggers
+      author: Herman
+      changes:
+        - sqlFile:
+            path: ../sql/created_at_trigger.sql
+            relativeToChangelogFile: true
+            endDelimiter: ';;'
+  - changeSet:
+      id: add-updated-at-triggers
+      author: Herman
+      changes:
+        - sqlFile:
+            path: ../sql/updated_at_trigger.sql
+            relativeToChangelogFile: true
+            endDelimiter: ';;'
