@@ -233,11 +233,11 @@ databaseChangeLog:
       id: create-author-alias-index
       author: Herman
       changes:
-          - createIndex:
-              indexName: author_alias_name_idx
-              tableName: author_alias
-              unique: true
-              columns:
+        - createIndex:
+            indexName: author_alias_name_idx
+            tableName: author_alias
+            unique: true
+            columns:
               - column:
                   name: name
 
@@ -253,3 +253,16 @@ databaseChangeLog:
             tableName: author_alias
             columnNames: name
             constraintName: author_alias_name_unique
+
+  - changeSet:
+      id: drop-version-table
+      author: Herman
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: submission
+            constraintName: fk_version
+        - dropColumn:
+            tableName: submission
+            columnName: versionId
+        - dropTable:
+            tableName: version

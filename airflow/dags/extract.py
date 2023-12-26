@@ -8,11 +8,6 @@ def extract_submissions(chunk_id):
   return select_as_df(sql)
 
 
-def extract_versions(chunk_id):
-  sql = f'select id, versions from project.kaggle_data where chunk = {chunk_id}'
-  return select_as_df(sql)
-
-
 def extract_kaggle_data(kaggle_data_dir, kaggle_file, dataset_name):
   if has_been_fetched(kaggle_data_dir, kaggle_file):
     print("Kaggle data has already been fetched")

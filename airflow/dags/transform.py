@@ -5,7 +5,7 @@ import numpy as np
 from Levenshtein import jaro
 from scipy.spatial.distance import cdist
 
-from model import Version, Submission, Author
+from model import Submission, Author
 
 date_time_format = '%a, %d %b %Y %H:%M:%S %Z'
 
@@ -16,7 +16,8 @@ def filter_authors(raw_authors):
 
 def transform_authors(raw_authors):
   print(raw_authors["authors_parsed"])
-  all_authors = raw_authors["authors_parsed"].apply(literal_eval).explode().apply(lambda names: ' '.join(names[1:]) + names[0]).to_numpy()
+  all_authors = raw_authors["authors_parsed"].apply(literal_eval).explode().apply(
+    lambda names: ' '.join(names[1:]) + names[0]).to_numpy()
   all_submitters = raw_authors["submitter"].to_numpy()
   all_names = np.unique(np.concatenate((all_authors, all_submitters))).reshape(-1, 1)
   distances = cdist(all_names, all_names, lambda a, s: jaro(a[0], s[0]))
@@ -36,12 +37,14 @@ def transform_authors(raw_authors):
 def filter_submissions(raw_submissions):
   filtered = raw_submissions.dropna()
   filtered = filtered[filtered['doi'] != 'None']
-  filtered['doi'] = filtered['doi'].apply(lambda x: x.split()[-1] if x else x) # Split the DOI string by whitespace and select the last DOI
+  filtered['doi'] = filtered['doi'].apply(
+    lambda x: x.split()[-1] if x else x)  # Split the DOI string by whitespace and select the last DOI
   return filtered
 
 
 def transform_submissions(raw_submissions):
   return [to_submission(raw_submission) for _, raw_submission in raw_submissions.iterrows()]
+
 
 def to_submission(raw_submission):
   doi = raw_submission['doi']
@@ -54,8 +57,3 @@ def to_submission(raw_submission):
 
 def parse_date_time(value):
   datetime.strptime(value, date_time_format).isoformat()
-
-
-def transform_versions(raw_versions):
-  # TODO: transform versions to star schema shape.
-  return raw_versions

@@ -13,7 +13,7 @@ default_args = {
 
 INPUT_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'input')
 SQL_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'sql')
-NEO4J_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'neo4j')  
+NEO4J_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'neo4j')
 
 # define custom function to load data into Neo4j
 def load_into_neo4j(uri, user, password, file_path):
@@ -38,7 +38,7 @@ def etl_submissions():
   from airflow.operators.python import ShortCircuitOperator
   from airflow.providers.postgres.operators.postgres import PostgresOperator
 
-  from etl import process_authors, process_submissions, process_versions, process_citations
+  from etl import process_authors, process_submissions, process_citations
 
   @task()
   def extract_chunk():
@@ -80,13 +80,11 @@ def etl_submissions():
   )
   process_authors_task = process_authors()
   process_submissions_task = process_submissions()
-  process_versions_task = process_versions()
   process_citations_task = process_citations()
   neo4j_task = load_into_neo4j_task()
   complete_chunk_task = complete_chunk()
 
   extract_chunk_task >> check_for_chunks_to_process >> process_authors_task >> process_submissions_task >> [
-    process_versions_task,
     process_citations_task, neo4j_task] >> complete_chunk_task
 
 

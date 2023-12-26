@@ -52,11 +52,6 @@ def escape_sql_string(value):
   return value.replace("'", "''")
 
 
-def load_versions(versions):
-  # TODO: load versions from dataframe to star schema tables. Create SQL files for loading. Execute SQL file
-  return None
-
-
 def load_kaggle_data_chunks(connection_id, schema, kaggle_file):
   import pandas as pd
   from airflow.providers.postgres.hooks.postgres import PostgresHook

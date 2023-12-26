@@ -1,12 +1,6 @@
 import uuid
 
 
-class Version:
-  def __init__(self, number, created):
-    self.number = number
-    self.created = created
-
-
 class Author:
   def __init__(self, name, email, affiliation, aliases):
     self.id = uuid.uuid4()

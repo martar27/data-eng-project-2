@@ -1,9 +1,9 @@
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
 
-from extract import extract_authors, extract_submissions, extract_versions
-from transform import filter_authors, transform_authors, filter_submissions, transform_submissions, transform_versions
-from load import load_authors, load_versions, load_submissions
+from extract import extract_authors, extract_submissions
+from transform import filter_authors, transform_authors, filter_submissions, transform_submissions
+from load import load_authors, load_submissions
 
 
 @task()
@@ -22,14 +22,6 @@ def process_submissions():
   raw_submissions = filter_submissions(raw_submissions)
   submissions = transform_submissions(raw_submissions)
   load_submissions(submissions, chunk_id)
-
-
-@task()
-def process_versions():
-  chunk_id = get_current_chunk_id()
-  raw_versions = extract_versions(chunk_id)
-  versions = transform_versions(raw_versions)
-  load_versions(versions)
 
 
 @task()
