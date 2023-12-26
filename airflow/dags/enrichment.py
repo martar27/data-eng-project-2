@@ -1,15 +1,13 @@
 from datetime import datetime, timedelta
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-import os
-import sqlalchemy as db
-import pandas as pd
-from sqlalchemy import text
-from crossref.restful import Works
-import requests
-from sqlalchemy import create_engine, Column, Integer, String, MetaData, Table
-import numpy as np
 
+import numpy as np
+import pandas as pd
+import requests
+import sqlalchemy as db
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from crossref.restful import Works
+from sqlalchemy import Column, Integer, String, Table
 
 default_args = {
   'owner': 'DWH',
@@ -26,7 +24,7 @@ dag = DAG(
     default_args=default_args,
     dag_id = 'enrichment',
     description='Dropping none values and data enrichment with crossref',
-    schedule_interval=None, 
+    schedule_interval=None,
 )
 
 
@@ -43,7 +41,7 @@ def clean_data():
                 .loc[df_og['title'].apply(lambda x: len(str(x).split()) > 1)] \
                 .loc[df_og['doi'].notnull() & (df_og['doi'] != 'None')] \
                 .loc[df_og['authors'].notnull() ]
-                
+
 
     # Reset the index after dropping rows
     df_og.reset_index(drop=True, inplace=True)
@@ -72,7 +70,7 @@ def crossref_api_and_new_table(**kwargs):
     cited_pubs = []
     cited_by = []
 
-    for i in range(len(df_og)): 
+    for i in range(len(df_og)):
         doi = df_og['doi'].iloc[i]
         dois.append(doi)
 
@@ -82,25 +80,25 @@ def crossref_api_and_new_table(**kwargs):
             response.raise_for_status()  # Check for HTTP errors
             data = response.json()
 
-            if isinstance(data['message'], dict): 
+            if isinstance(data['message'], dict):
                 message = data['message']
 
                 # Extract authors
                 author_list = [author['family'] for author in message.get('author', []) if 'family' in author]
                 authors.append(author_list)
-                
+
                 # Extract publication type
                 types.append(message.get('type'))
-                
+
                 # Extract article title
                 title = message.get('title', [])
                 a_titles.append(title[0] if title else None)
-            
+
                 # Extract journal title
                 #short_container_title = message.get('short-container-title', [])
                 j_title = message.get('short-container-title', [])
                 j_titles.append(j_title[0] if j_title else None)
-                
+
                 #Extract subjects
                 subject = message.get('subject', [])
                 subjects.append(subject[0] if subject else None)
@@ -145,9 +143,9 @@ def crossref_api_and_new_table(**kwargs):
     df = pd.DataFrame({
     'DOI': dois,
     'Authors': authors,
-    'Types': types, 
+    'Types': types,
     'Journal Titles': j_titles,
-    'Subject area': subjects, 
+    'Subject area': subjects,
     'Pulblication year': publication_years,
     'Article title': a_titles,
     'Article language': languages,
@@ -201,7 +199,7 @@ def extract_cited_publications(**kwargs):
                     # Extract details for cited publications
                     authors_list = [author['family'] for author in message.get('author', []) if 'family' in author]
                     authors_dict[key] = authors_list if authors_list else None
-                    
+
                     # Extract type
                     type = message.get('type', None)
                     types_dict[key] = type
@@ -209,7 +207,7 @@ def extract_cited_publications(**kwargs):
                     # Extract journal title
                     j_title_list = message.get('short-container-title', [])
                     j_titles_dict[key] = j_title_list[0] if j_title_list else None
-                    
+
                     # Extract subject
                     subject_list = message.get('subject', [])
                     subjects_dict[key] = subject_list[0] if subject_list else None
@@ -217,7 +215,7 @@ def extract_cited_publications(**kwargs):
                     # Extract publication year
                     pub_date_parts = message.get('published', {}).get('date-parts', [[]])
                     publication_years_dict[key] = pub_date_parts[0][0] if pub_date_parts[0] else None
-                    
+
                     # Extract article title
                     a_title_list = message.get('title', [])
                     a_titles_dict[key] = a_title_list[0] if a_title_list else None
@@ -225,7 +223,7 @@ def extract_cited_publications(**kwargs):
                     # Extract language
                     language = message.get('language', None)
                     languages_dict[key] = language
-                    
+
                     # Extract cited publications DOI
                     cited_pubs_list = [ref['DOI'] for ref in message.get('reference', []) if 'DOI' in ref]
                     cited_pubs_dict[key] = cited_pubs_list if cited_pubs_list else None
@@ -233,7 +231,7 @@ def extract_cited_publications(**kwargs):
                     cited_by_count = message.get('is-referenced-by-count', None)
                     cited_by_dict[key] = cited_by_count
 
-                    
+
                 else:
                     # If data is not available, store None
                     authors_dict[key] = None
@@ -245,7 +243,7 @@ def extract_cited_publications(**kwargs):
                     languages_dict[key] = None
                     cited_pubs_dict[key] = None
                     cited_by_dict[key] = None
-                    
+
 
             except requests.RequestException as e:
                 # Handle exceptions by storing None
@@ -279,7 +277,7 @@ def extract_cited_publications(**kwargs):
             'Original Total Citations': df['Total citations'].iloc[j],
             'Original Index': j,
 
-            
+
         }
 
         total_citations = df['Total citations'].iloc[j]
@@ -300,7 +298,7 @@ def extract_cited_publications(**kwargs):
                     'Cited Cited By': cited_by_dict.get(key, None),
                     'Cited Cited Publications': cited_pubs_dict.get(key, None),
                     'Cited Total Citations': len(cited_pubs_dict.get(key, [])) if cited_pubs_dict.get(key, None) else 0,
-    
+
         }
                 merged_data = {**original_data, **cited_data}
                 kaggle_data_cref.append(merged_data)
