@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from requests_cache import CachedSession
 
-session = CachedSession(expire_after=timedelta(days=1))
+session = CachedSession(expire_after=timedelta(days=5))  # Long TTL for testing purposes
 
 
 def extract_authors(chunk_id):
@@ -56,55 +56,16 @@ def extract_citations_from_crossref(doi_df):
   return citations
 
 
-# def extract_cited_publications_from_crossref(citations_df):
-#   import pandas as pd
-#   citations_dict = {}
-#
-#   # Extract data for each cited publication
-#   for j in range(len(citations_df)):  # For each original publication
-#     total_citations = citations_df['Total citations'].iloc[j]
-#
-#     for i in range(total_citations):  # For each cited publication
-#       doidoi = citations_df['Cited publications'].iloc[j][i]
-#       citations = request_from_crossref(doidoi)
-#       key = f"{j}_{i}"
-#       citations_dict[key] = citations
-#
-#   # Create the new DataFrame
-#   kaggle_data_cref = pd.DataFrame()
-#
-#   for j in range(len(citations_df)):
-#     original_data = {
-#       'Original DOI': citations_df['DOI'].iloc[j],
-#       'Original Authors': citations_df['Authors'].iloc[j],
-#       'Original Type': citations_df['Types'].iloc[j],
-#       'Original Journal Title': citations_df['Journal Titles'].iloc[j],
-#       'Original Subject Area': citations_df['Subject area'].iloc[j],
-#       'Original Publication Year': citations_df['Pulblication year'].iloc[j],
-#       'Original Article Title': citations_df['Article title'].iloc[j],
-#       'Original Article Language': citations_df['Article language'].iloc[j],
-#       'Original Cited By': citations_df['Cited by'].iloc[j],
-#       'Original Cited Publications': citations_df['Cited publications'].iloc[j],
-#       'Original Total Citations': citations_df['Total citations'].iloc[j],
-#       'Original Index': j,
-#     }
-#
-#     total_citations = citations_df['Total citations'].iloc[j]
-#     if total_citations == 0:
-#       kaggle_data_cref.append(original_data)
-#     else:
-#       for i in range(total_citations):
-#         key = f"{j}_{i}"
-#         cited_data = citations_dict.get(key).as_dict(prefix='Cited ')
-#         cited_data['Cited DOI indices'] = key
-#         cited_data['Cited Total Citations'] = len(citations_dict.get(key).cited_pubs) if citations_dict.get(
-#           key).cited_pubs else 0
-#
-#         merged_data = {**original_data, **cited_data}
-#         df = pd.DataFrame([merged_data])
-#         kaggle_data_cref = pd.concat([kaggle_data_cref, df], ignore_index=True)
-#
-#   return kaggle_data_cref
+def extract_cited_publications(citations):
+  import pandas as pd
+
+  kaggle_data_cref = pd.DataFrame()
+  for citation in citations:
+    citation_dict = citation.as_dict('Original ')
+    rows = [{**citation_dict, **request_from_crossref(ref.doi).as_dict('Cited ')} for ref in citation.references]
+    kaggle_data_cref = pd.concat([kaggle_data_cref, pd.DataFrame(rows)], ignore_index=True)
+
+  return kaggle_data_cref
 
 
 def request_from_crossref(doi):

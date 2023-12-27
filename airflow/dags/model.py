@@ -29,7 +29,7 @@ class Submission:
 
 class CrossrefCitation:
   def __init__(self, doi, title, authors, type, j_title, subjects, publication_year, language, cited_pubs,
-               cited_by, references):
+               total_citations, cited_by, references):
     self.id = uuid.uuid4()
     self.doi = doi
     self.title = title
@@ -40,6 +40,7 @@ class CrossrefCitation:
     self.publication_year = publication_year
     self.language = language
     self.cited_pubs = cited_pubs
+    self.total_citations = total_citations
     self.cited_by = cited_by
     self.references = references
 
@@ -72,11 +73,12 @@ class CrossrefCitation:
 
     publication_cited_DOIs = [ref['DOI'] for ref in message.get('reference', []) if 'DOI' in ref]
     cited_pubs = publication_cited_DOIs if publication_cited_DOIs else None
+    total_citations = sum(_ is not None for _ in cited_pubs) if cited_pubs else 0
 
     references = [CrossrefReference.from_dict(ref) for ref in message.get('reference', []) if 'DOI' in ref]
 
     return CrossrefCitation(doi, title, authors, type, j_title, subjects, publication_year, language, cited_pubs,
-                            cited_by, references)
+                            total_citations, cited_by, references)
 
   def as_dict(self, prefix=''):
     return {prefix + 'DOI': self.doi,
@@ -88,7 +90,8 @@ class CrossrefCitation:
             prefix + 'Article title': self.title,
             prefix + 'Article language': self.language,
             prefix + 'Cited by': self.cited_by,
-            prefix + 'Cited publications': self.cited_pubs}
+            prefix + 'Cited publications': self.cited_pubs,
+            prefix + 'Total citations': self.total_citations}
 
 
 class CrossrefReference:

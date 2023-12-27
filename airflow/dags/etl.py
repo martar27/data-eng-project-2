@@ -2,7 +2,7 @@ from airflow.decorators import task
 from airflow.operators.python import get_current_context
 
 from extract import extract_authors, extract_submissions, extract_citations_from_crossref, \
-  extract_submission_doi
+  extract_submission_doi, extract_cited_publications
 from load import load_authors, load_submissions, load_citations
 from transform import filter_authors, transform_authors, filter_submissions, transform_submissions, \
   filter_submission_doi
@@ -32,7 +32,8 @@ def process_citations():
   raw_doi = extract_submission_doi(chunk_id)
   doi_df = filter_submission_doi(raw_doi)
   crossref_citations = extract_citations_from_crossref(doi_df)
-  load_citations(crossref_citations, chunk_id)
+  original_cited_df = extract_cited_publications(crossref_citations)
+  load_citations(crossref_citations, chunk_id, original_cited_df)
 
 
 def get_current_chunk_id():

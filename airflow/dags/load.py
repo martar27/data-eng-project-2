@@ -49,7 +49,9 @@ def load_submissions(submissions, chunk_id):
   execute_sql(sql_file)
 
 
-def load_citations(citations, chunk_id):
+def load_citations(citations, chunk_id, original_cited_df):
+  from airflow.providers.postgres.hooks.postgres import PostgresHook
+
   sql_file = SQL_FOLDER + f'/citations_{chunk_id}.sql'
   with open(sql_file, 'w') as f:
     for citation in citations:
@@ -61,6 +63,10 @@ def load_citations(citations, chunk_id):
           f"VALUES ((SELECT id from project.citation where doi = '{ref.doi}'), '{citation.citing_submission_id}') ON CONFLICT DO NOTHING;\n"
         )
   execute_sql(sql_file)
+
+  postgres_hook = PostgresHook('dwh_pg')
+  engine = postgres_hook.get_sqlalchemy_engine()
+  original_cited_df.to_sql(name='kaggle_data_cref', con=engine, schema='project', index=False, if_exists='append')
 
 
 def escape_sql_string(value):
