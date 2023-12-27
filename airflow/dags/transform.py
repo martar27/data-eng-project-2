@@ -46,6 +46,15 @@ def transform_submissions(raw_submissions):
   return [to_submission(raw_submission) for _, raw_submission in raw_submissions.iterrows()]
 
 
+def filter_submission_doi(raw_doi):
+  df = raw_doi.loc[raw_doi['title'].apply(lambda x: len(str(x).split()) > 1)] \
+    .loc[raw_doi['doi'].notnull() & (raw_doi['doi'] != 'None')] \
+    .loc[raw_doi['authors'].notnull()]
+  df = df.drop_duplicates(subset=['doi'])
+  df.reset_index(drop=True, inplace=True)
+  return df
+
+
 def to_submission(raw_submission):
   doi = raw_submission['doi']
   title = raw_submission['title']

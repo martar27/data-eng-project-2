@@ -1,9 +1,11 @@
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
 
-from extract import extract_authors, extract_submissions
-from transform import filter_authors, transform_authors, filter_submissions, transform_submissions
-from load import load_authors, load_submissions
+from extract import extract_authors, extract_submissions, extract_citations_from_crossref, \
+  extract_submission_doi
+from load import load_authors, load_submissions, load_citations
+from transform import filter_authors, transform_authors, filter_submissions, transform_submissions, \
+  filter_submission_doi
 
 
 @task()
@@ -26,8 +28,11 @@ def process_submissions():
 
 @task()
 def process_citations():
-  # TODO: extract citations from some source. clean, transform and load
-  pass
+  chunk_id = get_current_chunk_id()
+  raw_doi = extract_submission_doi(chunk_id)
+  doi_df = filter_submission_doi(raw_doi)
+  crossref_citations = extract_citations_from_crossref(doi_df)
+  load_citations(crossref_citations, chunk_id)
 
 
 def get_current_chunk_id():

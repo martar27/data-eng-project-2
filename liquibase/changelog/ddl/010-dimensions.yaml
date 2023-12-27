@@ -453,3 +453,29 @@ databaseChangeLog:
             columns:
               - column:
                   name: doi
+
+  - changeSet:
+      id: change-citation-columns
+      author: Herman
+      changes:
+        - addColumn:
+            tableName: citation
+            columns:
+              - column:
+                  name: doi
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: author
+                  type: varchar(255)
+              - column:
+                  name: journal_title
+                  type: varchar(255)
+        - dropColumn:
+            tableName: citation
+            columnName: publisher
+        - dropColumn:
+            tableName: citation
+            columnName: title

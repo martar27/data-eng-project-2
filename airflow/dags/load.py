@@ -32,6 +32,7 @@ def load_authors(authors, chunk_id):
   execute_neo4j(
     "LOAD CSV WITH HEADERS FROM 'file:///" + f'/authors_{chunk_id}.csv' + "' AS csvLine MERGE (p:Author {name: csvLine.name}) ON CREATE SET p.id = csvLine.id")
 
+
 # TODO: Load submission to graph database.
 def load_submissions(submissions, chunk_id):
   sql_file = SQL_FOLDER + f'/submissions_{chunk_id}.sql'
@@ -46,6 +47,21 @@ def load_submissions(submissions, chunk_id):
         f"VALUES ('{submission.id}', '{submission.doi}', '{title_escaped}', '{submission.update_date}', '{submission.summary_id}') ON CONFLICT (doi) DO UPDATE SET doi = excluded.doi, title = excluded.title, date = excluded.date;\n"
       )
   execute_sql(sql_file)
+
+
+def load_citations(citations, chunk_id):
+  sql_file = SQL_FOLDER + f'/citations_{chunk_id}.sql'
+  with open(sql_file, 'w') as f:
+    for citation in citations:
+      for ref in citation.references:
+        f.write(
+          f"INSERT INTO project.citation (id, doi, year, author, journal_title)\n"
+          f"VALUES ('{ref.id}', '{ref.doi}', {ref.year}, '{ref.author}', '{ref.journal_title}') ON CONFLICT (doi) DO NOTHING;\n"
+          f"INSERT INTO project.citation_submission (\"citationId\", \"submissionId\")\n"
+          f"VALUES ((SELECT id from project.citation where doi = '{ref.doi}'), '{citation.citing_submission_id}') ON CONFLICT DO NOTHING;\n"
+        )
+  execute_sql(sql_file)
+
 
 def escape_sql_string(value):
   """Escape single quotes in a string for SQL insertion."""
