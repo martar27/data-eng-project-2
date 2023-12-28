@@ -140,7 +140,7 @@ def to_series(message, prefix):
   publication_year = publication_year if str(publication_year).isdigit() else None
   publication_year = None if publication_year is None or math.isnan(publication_year) else publication_year
 
-  publication_cited_DOIs = [ref[''] for ref in message.get('reference', []) if 'DOI' in ref]
+  publication_cited_DOIs = [ref['DOI'] for ref in message.get('reference', []) if 'DOI' in ref]
   cited_pubs = publication_cited_DOIs if publication_cited_DOIs else None
   total_citations = sum(_ is not None for _ in cited_pubs) if cited_pubs else 0
 
