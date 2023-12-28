@@ -57,8 +57,8 @@ def load_citations(citation_publications_df, chunk_id):
   with open(sql_file, 'w') as f:
     for _, row in citation_publications_df.iterrows():
       id = uuid.uuid4()
-      authors = escape_sql_string(' '.join(row['Cited Authors']))
-      title = escape_sql_string(row['Cited Article title'])
+      authors = escape_sql_string(' '.join(row['cited_authors']))
+      title = escape_sql_string(row['cited_article_title'])
       f.write(
         f"INSERT INTO project.citation (id, doi, title, year, authors)\n"
         f"VALUES ('{id}', '{row['cited_doi']}', '{title}', '{row['cited_publication_year']}', '{authors}') ON CONFLICT (doi) DO NOTHING;\n"

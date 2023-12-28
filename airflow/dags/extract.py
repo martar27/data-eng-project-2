@@ -54,7 +54,7 @@ def select_as_df(sql):
 def extract_citations_from_crossref(doi_df):
   import pandas as pd
 
-  publications = doi_df.apply(lambda row: request_from_crossref(row['doi'], 'original '), axis=1).dropna()
+  publications = doi_df.apply(lambda row: request_from_crossref(row['doi'], 'original'), axis=1).dropna()
   return pd.concat([doi_df['id'], publications], axis=1)
 
 
@@ -65,7 +65,7 @@ def extract_cited_publications(og_df):
   for _, row in og_df.iterrows():
     if not is_valid_publication(row):
       continue
-    citation_publications = [request_from_crossref(citation_doi, 'cited ') for citation_doi in
+    citation_publications = [request_from_crossref(citation_doi, 'cited') for citation_doi in
                              row['original_cited_publications'] if citation_doi is not None]
     rows = [pd.concat([row, c]) for c in citation_publications if is_valid_reference(c)]
     kaggle_data_cref = pd.concat([kaggle_data_cref, pd.DataFrame(rows)], ignore_index=True)
@@ -117,7 +117,7 @@ def to_series(message, prefix):
   import pandas as pd
   import math
 
-  doi = message.get('doi')
+  doi = message.get('DOI')
   author_list = [author['family'] for author in message.get('author', []) if 'family' in author]
   authors = author_list
   type = message.get('type')
@@ -140,7 +140,7 @@ def to_series(message, prefix):
   publication_year = publication_year if str(publication_year).isdigit() else None
   publication_year = None if publication_year is None or math.isnan(publication_year) else publication_year
 
-  publication_cited_DOIs = [ref['doi'] for ref in message.get('reference', []) if 'doi' in ref]
+  publication_cited_DOIs = [ref[''] for ref in message.get('reference', []) if 'DOI' in ref]
   cited_pubs = publication_cited_DOIs if publication_cited_DOIs else None
   total_citations = sum(_ is not None for _ in cited_pubs) if cited_pubs else 0
 
