@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 
 from airflow.providers.neo4j.operators.neo4j import Neo4jOperator
 from sqlalchemy import text
@@ -49,28 +50,33 @@ def load_submissions(submissions, chunk_id):
   execute_sql(sql_file)
 
 
-def load_citations(citations, chunk_id, original_cited_df):
+def load_citations(citation_publications_df, chunk_id):
   from airflow.providers.postgres.hooks.postgres import PostgresHook
 
   sql_file = SQL_FOLDER + f'/citations_{chunk_id}.sql'
   with open(sql_file, 'w') as f:
-    for citation in citations:
-      for ref in citation.references:
-        f.write(
-          f"INSERT INTO project.citation (id, doi, year, author, journal_title)\n"
-          f"VALUES ('{ref.id}', '{ref.doi}', {ref.year}, '{ref.author}', '{ref.journal_title}') ON CONFLICT (doi) DO NOTHING;\n"
-          f"INSERT INTO project.citation_submission (\"citationId\", \"submissionId\")\n"
-          f"VALUES ((SELECT id from project.citation where doi = '{ref.doi}'), '{citation.citing_submission_id}') ON CONFLICT DO NOTHING;\n"
-        )
+    for _, row in citation_publications_df.iterrows():
+      id = uuid.uuid4()
+      authors = escape_sql_string(' '.join(row['Cited Authors']))
+      title = escape_sql_string(row['Cited Article title'])
+      f.write(
+        f"INSERT INTO project.citation (id, doi, title, year, authors)\n"
+        f"VALUES ('{id}', '{row['Cited DOI']}', '{title}', '{row['Cited Publication year']}', '{authors}') ON CONFLICT (doi) DO NOTHING;\n"
+        f"INSERT INTO project.citation_submission (\"citationId\", \"submissionId\")\n"
+        f"VALUES ((SELECT id from project.citation where doi = '{row['Cited DOI']}'), '{row['id']}') ON CONFLICT DO NOTHING;\n"
+      )
   execute_sql(sql_file)
 
   postgres_hook = PostgresHook('dwh_pg')
   engine = postgres_hook.get_sqlalchemy_engine()
-  original_cited_df.to_sql(name='kaggle_data_cref', con=engine, schema='project', index=False, if_exists='append')
+  citation_publications_df.to_sql(name='kaggle_data_cref', con=engine, schema='project', index=False,
+                                  if_exists='append')
 
 
 def escape_sql_string(value):
   """Escape single quotes in a string for SQL insertion."""
+  if value is None:
+    return None
   return value.replace("'", "''")
 
 

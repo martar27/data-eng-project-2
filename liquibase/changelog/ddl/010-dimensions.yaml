@@ -468,14 +468,16 @@ databaseChangeLog:
                     nullable: false
                     unique: true
               - column:
-                  name: author
-                  type: varchar(255)
-              - column:
-                  name: journal_title
-                  type: varchar(255)
+                  name: authors
+                  type: varchar
         - dropColumn:
             tableName: citation
             columnName: publisher
-        - dropColumn:
+        - modifyDataType:
             tableName: citation
             columnName: title
+            newDataType: varchar
+        - modifyDataType:
+            tableName: citation
+            columnName: year
+            newDataType: varchar

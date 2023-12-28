@@ -32,8 +32,8 @@ def process_citations():
   raw_doi = extract_submission_doi(chunk_id)
   doi_df = filter_submission_doi(raw_doi)
   crossref_citations = extract_citations_from_crossref(doi_df)
-  original_cited_df = extract_cited_publications(crossref_citations)
-  load_citations(crossref_citations, chunk_id, original_cited_df)
+  citation_publications_df = extract_cited_publications(crossref_citations)
+  load_citations(citation_publications_df, chunk_id)
 
 
 def get_current_chunk_id():

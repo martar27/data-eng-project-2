@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from requests_cache import CachedSession
 
-session = CachedSession(expire_after=timedelta(days=5))  # Long TTL for testing purposes
+session = CachedSession(expire_after=timedelta(days=5))  # Long TTL and no configured backend for testing purposes
 
 
 def extract_authors(chunk_id):
@@ -52,24 +52,49 @@ def select_as_df(sql):
 
 
 def extract_citations_from_crossref(doi_df):
-  citations = [request_from_crossref(row['doi']).with_citing_submission_id(row['id']) for _, row in doi_df.iterrows()]
-  return citations
+  import pandas as pd
+
+  publications = doi_df.apply(lambda row: request_from_crossref(row['doi'], 'Original '), axis=1).dropna()
+  return pd.concat([doi_df['id'], publications], axis=1)
 
 
-def extract_cited_publications(citations):
+def extract_cited_publications(og_df):
   import pandas as pd
 
   kaggle_data_cref = pd.DataFrame()
-  for citation in citations:
-    citation_dict = citation.as_dict('Original ')
-    rows = [{**citation_dict, **request_from_crossref(ref.doi).as_dict('Cited ')} for ref in citation.references]
+  for _, row in og_df.iterrows():
+    if not is_valid_publication(row):
+      continue
+    citation_publications = [request_from_crossref(citation_doi, 'Cited ') for citation_doi in
+                             row['Original Cited publications'] if citation_doi is not None]
+    rows = [pd.concat([row, c]) for c in citation_publications if is_valid_reference(c)]
     kaggle_data_cref = pd.concat([kaggle_data_cref, pd.DataFrame(rows)], ignore_index=True)
 
   return kaggle_data_cref
 
 
-def request_from_crossref(doi):
-  from model import CrossrefCitation
+def is_valid_publication(pub):
+  return (pub is not None
+          and pub['Original Authors'] is not None
+          and pub['Original DOI'] is not None
+          and pub['Original Article title'] is not None
+          and pub['Original Cited publications'] is not None
+          and pub['Original Total Citations'] is not None
+          and pub['Original Total Citations'] > 0
+          and len(pub['Original Article title']) < 200
+          )
+
+
+def is_valid_reference(ref):
+  return (ref is not None
+          and ref['Cited Authors'] is not None
+          and ref['Cited DOI'] is not None
+          and ref['Cited Article title'] is not None
+          and len(ref['Cited Article title']) < 200
+          )
+
+
+def request_from_crossref(doi, out_prefix=''):
   import requests
 
   try:
@@ -81,8 +106,54 @@ def request_from_crossref(doi):
 
     if isinstance(data['message'], dict):
       message = data['message']
-      return CrossrefCitation.from_json_message(message)
+      return to_series(message, out_prefix)
     return None
   except requests.RequestException as e:
     print(f"Failed to query Crossref API for DOI {doi}. {e}")
     return None
+
+
+def to_series(message, prefix):
+  import pandas as pd
+  import math
+
+  doi = message.get('DOI')
+  author_list = [author['family'] for author in message.get('author', []) if 'family' in author]
+  authors = author_list
+  type = message.get('type')
+  language = message.get('language')
+  cited_by = message.get('is-referenced-by-count')
+
+  title = message.get('title', [])
+  title = title[0] if title else None
+
+  # Extract journal title
+  # short_container_title = message.get('short-container-title', [])
+  j_title = message.get('short-container-title', [])
+  j_title = j_title[0] if j_title else None
+
+  subject = message.get('subject', [])
+  subjects = subject[0] if subject else None
+
+  pub_date_parts = message.get('published', {}).get('date-parts', [[]])
+  publication_year = pub_date_parts[0][0] if pub_date_parts[0] else None
+  publication_year = publication_year if str(publication_year).isdigit() else None
+  publication_year = None if publication_year is None or math.isnan(publication_year) else publication_year
+
+  publication_cited_DOIs = [ref['DOI'] for ref in message.get('reference', []) if 'DOI' in ref]
+  cited_pubs = publication_cited_DOIs if publication_cited_DOIs else None
+  total_citations = sum(_ is not None for _ in cited_pubs) if cited_pubs else 0
+
+  return pd.Series([doi, title, authors, type, j_title, subjects, publication_year, language, cited_pubs,
+                    total_citations, cited_by],
+                   index=[prefix + 'DOI',
+                          prefix + 'Article title',
+                          prefix + 'Authors',
+                          prefix + 'Types',
+                          prefix + 'Journal Titles',
+                          prefix + 'Subject area',
+                          prefix + 'Publication year',
+                          prefix + 'Article language',
+                          prefix + 'Cited publications',
+                          prefix + 'Total Citations',
+                          prefix + 'Cited by'])
