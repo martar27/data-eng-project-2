@@ -54,7 +54,7 @@ def select_as_df(sql):
 def extract_citations_from_crossref(doi_df):
   import pandas as pd
 
-  publications = doi_df.apply(lambda row: request_from_crossref(row['doi'], 'Original '), axis=1).dropna()
+  publications = doi_df.apply(lambda row: request_from_crossref(row['doi'], 'original'), axis=1).dropna()
   return pd.concat([doi_df['id'], publications], axis=1)
 
 
@@ -65,8 +65,8 @@ def extract_cited_publications(og_df):
   for _, row in og_df.iterrows():
     if not is_valid_publication(row):
       continue
-    citation_publications = [request_from_crossref(citation_doi, 'Cited ') for citation_doi in
-                             row['Original Cited publications'] if citation_doi is not None]
+    citation_publications = [request_from_crossref(citation_doi, 'cited') for citation_doi in
+                             row['original_cited_publications'] if citation_doi is not None]
     rows = [pd.concat([row, c]) for c in citation_publications if is_valid_reference(c)]
     kaggle_data_cref = pd.concat([kaggle_data_cref, pd.DataFrame(rows)], ignore_index=True)
 
@@ -75,22 +75,22 @@ def extract_cited_publications(og_df):
 
 def is_valid_publication(pub):
   return (pub is not None
-          and pub['Original Authors'] is not None
-          and pub['Original DOI'] is not None
-          and pub['Original Article title'] is not None
-          and pub['Original Cited publications'] is not None
-          and pub['Original Total Citations'] is not None
-          and pub['Original Total Citations'] > 0
-          and len(pub['Original Article title']) < 200
+          and pub['original_authors'] is not None
+          and pub['original_doi'] is not None
+          and pub['original_article_title'] is not None
+          and pub['original_cited_publications'] is not None
+          and pub['original_total_citations'] is not None
+          and pub['original_total_citations'] > 0
+          and len(pub['original_article_title']) < 200
           )
 
 
 def is_valid_reference(ref):
   return (ref is not None
-          and ref['Cited Authors'] is not None
-          and ref['Cited DOI'] is not None
-          and ref['Cited Article title'] is not None
-          and len(ref['Cited Article title']) < 200
+          and ref['cited_authors'] is not None
+          and ref['cited_doi'] is not None
+          and ref['cited_article_title'] is not None
+          and len(ref['cited_article_title']) < 200
           )
 
 
@@ -140,20 +140,20 @@ def to_series(message, prefix):
   publication_year = publication_year if str(publication_year).isdigit() else None
   publication_year = None if publication_year is None or math.isnan(publication_year) else publication_year
 
-  publication_cited_DOIs = [ref['DOI'] for ref in message.get('reference', []) if 'DOI' in ref]
+  publication_cited_DOIs = [ref[''] for ref in message.get('reference', []) if 'DOI' in ref]
   cited_pubs = publication_cited_DOIs if publication_cited_DOIs else None
   total_citations = sum(_ is not None for _ in cited_pubs) if cited_pubs else 0
 
   return pd.Series([doi, title, authors, type, j_title, subjects, publication_year, language, cited_pubs,
                     total_citations, cited_by],
-                   index=[prefix + 'DOI',
-                          prefix + 'Article title',
-                          prefix + 'Authors',
-                          prefix + 'Types',
-                          prefix + 'Journal Titles',
-                          prefix + 'Subject area',
-                          prefix + 'Publication year',
-                          prefix + 'Article language',
-                          prefix + 'Cited publications',
-                          prefix + 'Total Citations',
-                          prefix + 'Cited by'])
+                   index=[prefix + '_doi',
+                          prefix + '_article_title',
+                          prefix + '_authors',
+                          prefix + '_types',
+                          prefix + '_journal_titles',
+                          prefix + '_subject_area',
+                          prefix + '_publication_year',
+                          prefix + '_article_language',
+                          prefix + '_cited_publications',
+                          prefix + '_total_citations',
+                          prefix + '_cited_by'])
