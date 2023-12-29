@@ -10,9 +10,9 @@ WITH submitter_citations AS (
         s.id AS submission_id
     FROM
         {{ source('project','kaggle_data_cref') }} AS kdc
-        JOIN {{ source('project','citation') }} AS c ON kdc.cited_doi = c.doi
+        JOIN {{ source('project','citation') }} AS c ON kdc.cited_article_title = c.title
         JOIN {{ source('project','kaggle_data' ) }}AS kd ON kd.title = kdc.original_article_title
-        JOIN {{ source('project','submission') }} AS s ON kdc.original_doi = s.doi 
+        JOIN {{ source('project','submission') }} AS s ON kdc.original_article_title = s.title 
     GROUP BY
         kd.submitter, kdc.original_authors, kdc.original_doi, kdc.original_article_title, kdc.cited_doi, s.id
 )
