@@ -14,7 +14,7 @@ submission_info AS (
         kdc.original_publication_year as publication_year,
         s.title as submission_title
     FROM
-        {{ source('project','submissions' ) }} as s
+        {{ source('project','submission' ) }} as s
         JOIN {{ source('project','kaggle_data_cref' ) }}  as kdc ON s.doi = kdc.original_doi
 )
 
