@@ -14,3 +14,4 @@ sources:
       - name: citation
       - name: author
       - name: author_alias
+      - name: citation_submission

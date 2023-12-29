@@ -8,7 +8,7 @@ WITH submitter_citations AS (
         COUNT(DISTINCT kdc.cited_doi) AS unique_citations_count
     FROM
          {{ source('project','kaggle_data_cref') }} AS kdc
-        JOIN JOIN {{ source('project','kaggle_data' ) }} AS kd ON kd.doi = kdc.original_doi
+        JOIN {{ source('project','kaggle_data' ) }} AS kd ON kd.doi = kdc.original_doi
     GROUP BY
         kd.submitter, kdc.original_authors, kdc.original_doi, kdc.original_article_title
 )

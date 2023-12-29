@@ -18,13 +18,9 @@ submission_info AS (
         JOIN {{ source('project','kaggle_data_cref' ) }}  as kdc ON s.doi = kdc.original_doi
 )
 
-
 SELECT DISTINCT ON (cs."citationId", cs."submissionId")
     ci.cited_author,
-    ci.citation_title,
-    ci.citation_year,
     SUM(author_stats.citation_count) OVER (PARTITION BY ci.cited_author) AS total_citations_by_author
-
 FROM
     {{ source('project','citation_submission' ) }} AS cs
 JOIN citation_info AS ci ON cs."citationId" = ci.citation_id
@@ -40,7 +36,8 @@ LEFT JOIN (
         ci.cited_author
 ) AS author_stats ON ci.cited_author = author_stats.cited_author
 ORDER BY
-    cs."citationId", cs."submissionId", citation_count DESC;
+    cs."citationId", cs."submissionId", author_stats.citation_count DESC
+
 
 
    
