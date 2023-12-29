@@ -12,4 +12,5 @@ sources:
       - name: submission
       - name: summary
       - name: citation
-      
+      - name: author
+      - name: author_alias
