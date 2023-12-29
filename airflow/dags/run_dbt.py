@@ -29,20 +29,4 @@ run_dbt_task = BashOperator(
     dag=dag,
 )
 
-# run_dbt_task = DockerOperator(
-#     # task_id='run_dbt',
-#     # image='data-eng-project-dbt-1',
-#     # api_version='1.35',
-#     # command='ls /',
-#     # docker_conn_id='docker_dbt',
-#     task_id='docker_command',
-#     image='centos:latest',
-#     api_version='1.43',
-#     auto_remove=True,
-#     command="/bin/sleep 30",
-#     docker_url="unix://var/run/docker.sock",
-#     network_mode="bridge",
-#     dag=dag,
-# )
-
 run_dbt_task 
