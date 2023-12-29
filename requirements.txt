@@ -8,3 +8,4 @@ scipy
 neo4j
 crossrefapi
 requests_cache
+dbt-postgres

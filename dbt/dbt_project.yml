@@ -19,5 +19,14 @@ clean-targets: # directories to be removed by `dbt clean`
 # Configuring models
 models:
   dbt_data_eng_project:
-    totalPublications:
-      +materialized: view
+    +enabled: true
+    dwh_pg:
+      reporting:
+        +materialized: view
+        +schema: reporting
+    
+sources:
+  dbt_data_eng_project:
+    project:
+      kaggle_data:
+        +enabled: true 

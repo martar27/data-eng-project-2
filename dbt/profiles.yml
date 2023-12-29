@@ -1,0 +1,12 @@
+data_eng_project:
+    target: dwh_pg
+    outputs:
+      dwh_pg:
+        type: postgres
+        host: "{{ env_var('dwh_pg_host') }}"
+        user: "{{ env_var('dwh_pg_user') }}"
+        pass: "{{ env_var('dwh_pg_pass') }}"
+        port: 5432 
+        dbname: dwh_pg
+        schema: reporting
+      

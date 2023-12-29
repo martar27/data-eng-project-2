@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: publications_per_cat
+    description: '{{ doc("publications_per_cat") }}'
+  - name: ranked_publications
+    description: '{{ doc("ranked_publications") }}'
+  - name: top_cited_submitters
+    description: '{{ doc("top_cited_submitters") }}'

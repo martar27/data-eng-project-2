@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: project
+    config: 
+      enabled: true
+    database: dwh_pg
+    schema: project
+    tables:
+      - name: kaggle_data_cref
+      - name: kaggle_data
+      - name: submission
+      - name: summary
+      - name: citation
+      
