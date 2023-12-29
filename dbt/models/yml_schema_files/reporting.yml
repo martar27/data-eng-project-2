@@ -3,7 +3,9 @@ version: 2
 models:
   - name: publications_per_cat
     description: '{{ doc("publications_per_cat") }}'
-  - name: ranked_publications
-    description: '{{ doc("ranked_publications") }}'
-  - name: top_cited_submitters
-    description: '{{ doc("top_cited_submitters") }}'
+  - name: author_citation_count
+    description: '{{ doc("author_citation_count") }}'
+  - name: citation_usage_per_sub
+    description: '{{ doc("citation_usage_per_sub") }}'
+  - name: journal_submissions
+    description: '{{ doc("journal_submissions") }}'
