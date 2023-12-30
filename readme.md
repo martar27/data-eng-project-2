@@ -81,7 +81,12 @@ docker compose down --volumes --remove-orphans
 
 ## DW schema
 
+Current schema
+
 ![schema](schema.png).
+
+
+## Initial thoughts
 
 ### Fact
 
@@ -149,13 +154,3 @@ docker compose down --volumes --remove-orphans
 #### Submitted Author -> Paper
 * date
 
-## Pipeline
-
-1. File watch to trigger pipeline
-2. Python task to read line by line from file and deserialize to object, divide to batch of objects
-3. Python task to filter out objects that are not valid
-4. Python task to transform object to star schema model
-5. Python task to transform object to graph db model
-6. Python task to enrich from external source
-7. Postgres insert task
-8. Neo4j insert task

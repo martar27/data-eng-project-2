@@ -481,3 +481,9 @@ databaseChangeLog:
             tableName: citation
             columnName: year
             newDataType: varchar
+  - changeSet:
+      id: drop-author-citations-table
+      author: Herman
+      changes:
+        - dropTable:
+            tableName: author_citation
