@@ -61,7 +61,9 @@ def to_submission(raw_submission):
   update_date = raw_submission['update_date']
   abstract = raw_submission['abstract']
   categories = raw_submission['categories']
-  return Submission(doi, title, update_date, abstract, categories)
+  authors = [(' '.join(names[1:]) + names[0]).replace('\'', '').replace('\"', '') for names in
+             literal_eval(raw_submission["authors_parsed"])]
+  return Submission(doi, title, update_date, abstract, categories, authors)
 
 
 def parse_date_time(value):
