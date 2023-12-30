@@ -42,11 +42,12 @@ def load_submissions(submissions, chunk_id):
       title_escaped = escape_sql_string(submission.title)
       abstract_escaped = escape_sql_string(submission.abstract)
       authors_values = ','.join([f'((SELECT author_id FROM project.author_alias WHERE name = \'{escape_sql_string(author)}\'), (SELECT id FROM project.submission WHERE doi = \'{submission.doi}\'))' for author in submission.authors])
+      submitter_id = f'(SELECT author_id from project.author_alias where name = \'{submission.submitter}\')'
       f.write(
         f"INSERT INTO project.summary (id, abstract, category)\n"
         f"VALUES ('{submission.summary_id}', '{abstract_escaped}', '{submission.categories}') ON CONFLICT (id) DO UPDATE SET category = excluded.category;\n"
-        f"INSERT INTO project.submission (id, doi, title, date, summary_id)\n"
-        f"VALUES ('{submission.id}', '{submission.doi}', '{title_escaped}', '{submission.update_date}', '{submission.summary_id}') ON CONFLICT (doi) DO UPDATE SET doi = excluded.doi, title = excluded.title, date = excluded.date;\n"
+        f"INSERT INTO project.submission (id, doi, title, date, summary_id, \"submitterId\")\n"
+        f"VALUES ('{submission.id}', '{submission.doi}', '{title_escaped}', '{submission.update_date}', '{submission.summary_id}', {submitter_id}) ON CONFLICT (doi) DO UPDATE SET doi = excluded.doi, title = excluded.title, date = excluded.date;\n"
         f"INSERT INTO project.author_submission (\"authorId\", \"submissionId\")\n"
         f"VALUES {authors_values} ON CONFLICT DO NOTHING;\n"
       )

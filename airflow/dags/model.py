@@ -17,7 +17,7 @@ class Author:
 
 
 class Submission:
-  def __init__(self, doi, title, update_date, abstract, categories, authors):
+  def __init__(self, doi, title, update_date, abstract, categories, authors, submitter):
     self.id = uuid.uuid4()
     self.doi = doi
     self.title = title
@@ -26,3 +26,4 @@ class Submission:
     self.abstract = abstract
     self.categories = categories
     self.authors = authors
+    self.submitter = submitter
