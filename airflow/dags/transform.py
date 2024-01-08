@@ -33,6 +33,19 @@ def transform_authors(raw_authors):
 
   return authors
 
+###############
+# New function
+###############
+import pandas as pd
+
+def generate_authors_csv(authors, output_dir):
+    # Assuming 'authors' is a list of tuples like [(author_id, name), ...]
+    authors_df = pd.DataFrame(authors, columns=['author_id', 'name'])
+    authors_df.to_csv(f'{output_dir}/authors.csv', index=False)
+###############
+# End new function
+###############
+
 
 def filter_submissions(raw_submissions):
   filtered = raw_submissions.dropna()

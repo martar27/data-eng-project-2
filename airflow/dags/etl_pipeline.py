@@ -42,6 +42,7 @@ def etl_submissions():
   from airflow.utils.state import State
 
   from etl import process_authors, process_submissions, process_citations
+  from transform import generate_authors_csv #---------
 
   @task(
     trigger_rule='all_done'
@@ -88,7 +89,7 @@ def etl_submissions():
   process_authors_task = process_authors()
   process_submissions_task = process_submissions()
   process_citations_task = process_citations()
-  # neo4j_task = load_into_neo4j_task()
+  neo4j_task = load_into_neo4j_task()   #---------
   complete_chunk_task = complete_chunk()
 
   extract_chunk_task >> check_for_chunks_to_process >> process_authors_task >> process_submissions_task >> process_citations_task >> complete_chunk_task

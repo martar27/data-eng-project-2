@@ -52,10 +52,24 @@ def select_as_df(sql):
 
 
 def extract_citations_from_crossref(doi_df):
-  import pandas as pd
+    import pandas as pd
 
-  publications = doi_df.apply(lambda row: request_from_crossref(row['doi'], 'original'), axis=1).dropna()
-  return pd.concat([doi_df['id'], publications], axis=1)
+    # Initialize an empty DataFrame for citations
+    citations_df = pd.DataFrame(columns=['original_doi', 'cited_doi'])
+
+    # Iterate over each DOI in the doi_df
+    for index, row in doi_df.iterrows():
+        original_doi = row['doi']
+        # Call the request_from_crossref function to get cited DOIs
+        cited_dois = request_from_crossref(original_doi, 'original')['cited_dois']
+        
+        # Check if cited_dois is not empty
+        if cited_dois:
+            # Append each pair of original_doi and cited_doi to the citations_df DataFrame
+            for cited_doi in cited_dois:
+                citations_df = citations_df.append({'original_doi': original_doi, 'cited_doi': cited_doi}, ignore_index=True)
+
+    return citations_df
 
 
 def extract_cited_publications(og_df):
@@ -71,6 +85,28 @@ def extract_cited_publications(og_df):
     kaggle_data_cref = pd.concat([kaggle_data_cref, pd.DataFrame(rows)], ignore_index=True)
 
   return kaggle_data_cref
+
+def extract_and_save_citations(chunk_id, output_dir): #---------------
+    # Assuming extract_citations_from_crossref is modified to return the required DataFrame
+    # and 'doi_df' is obtained from somewhere within your DAG execution context
+    doi_df = extract_submission_doi(chunk_id)  # Just an example, replace with actual call
+    citations_df = extract_citations_from_crossref(doi_df)
+
+    # Flatten the one-to-many relationship into pairs
+    citation_pairs = []
+    for index, row in citations_df.iterrows():
+        original_doi = row['original_doi']
+        for cited_doi in row['original_cited_publications']:  # Assuming this is a list of DOIs
+            citation_pairs.append({'original_doi': original_doi, 'cited_doi': cited_doi})
+
+    # Convert the list of dictionaries into a DataFrame
+    citations_pairs_df = pd.DataFrame(citation_pairs)
+
+    # Define the path where the CSV file will be saved
+    file_path = f"{output_dir}/citations.csv"
+
+    # Save the DataFrame to CSV
+    citations_pairs_df.to_csv(file_path, index=False)
 
 
 def is_valid_publication(pub):
