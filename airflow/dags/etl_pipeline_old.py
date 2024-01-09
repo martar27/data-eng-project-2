@@ -1,11 +1,7 @@
 import os
 from datetime import datetime
+
 from airflow.decorators import dag, task
-from airflow.operators.python import ShortCircuitOperator
-from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.utils.state import State
-from etl import process_authors, process_submissions, process_citations
-from transform import generate_authors_csv #---------
 
 default_args = {
   'owner': 'DWH',
@@ -19,24 +15,16 @@ INPUT_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'input')
 SQL_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'sql')
 NEO4J_FOLDER = os.path.join(os.getenv('DATA_FOLDER'), 'neo4j')
 
-@task()
-def generate_csv_files():
-    # generate CSV files from the data warehouse
-    
-    #print("CSV files generated")
 
-@task()
-def load_into_neo4j_task():
-    uri = os.getenv('NEO4J_URI', 'bolt://neo4j:7687')
-    user = os.getenv('NEO4J_USER', 'neo4j')
-    password = os.getenv('NEO4J_PASSWORD', 'test')
-    # the logic to load CSV files into Neo4j: 'LOAD CSV' Cypher commands for incremental loads.
-    #print("Data loaded into Neo4j")
+# define custom function to load data into Neo4j
+def load_into_neo4j(uri, user, password, file_path):
+  driver = GraphDatabase.driver(uri, auth=(user, password))
+  with driver.session() as session:
+    with session.begin_transaction() as tx:
+      query = open(file_path, 'r').read()
+      tx.run(query)
+  driver.close()
 
-@task()
-def run_cypher_queries():
-    # Cypher queries against the Neo4j database
-    #print("Cypher queries executed")
 
 @dag(
   default_args=default_args,
@@ -49,6 +37,12 @@ def run_cypher_queries():
   template_searchpath=[os.getenv('DATA_FOLDER'), SQL_FOLDER],
 )
 def etl_submissions():
+  from airflow.operators.python import ShortCircuitOperator
+  from airflow.providers.postgres.operators.postgres import PostgresOperator
+  from airflow.utils.state import State
+
+  from etl import process_authors, process_submissions, process_citations
+  from transform import generate_authors_csv #---------
 
   @task(
     trigger_rule='all_done'
@@ -71,6 +65,14 @@ def etl_submissions():
     )
     return pg_operator.execute({})
 
+  @task()
+  def load_into_neo4j_task():
+    uri = os.getenv('NEO4J_URI', 'if_missing_uri')
+    user = os.getenv('NEO4J_USER', 'if_missing_user')
+    password = os.getenv('NEO4J_PASSWORD', 'if_missing_password')
+    file_path = os.path.join(NEO4J_FOLDER, 'neo4j_query.cql')
+    load_into_neo4j(uri, user, password, file_path)
+
   def chunk_in_xcom(**kwargs):
     chunk = kwargs["ti"].xcom_pull(task_ids='extract_chunk', key='return_value')
     return len(chunk) > 0
@@ -84,24 +86,13 @@ def etl_submissions():
     task_id="check_for_chunks_to_process",
     python_callable=chunk_in_xcom,
   )
-  
   process_authors_task = process_authors()
   process_submissions_task = process_submissions()
   process_citations_task = process_citations()
   neo4j_task = load_into_neo4j_task()   #---------
-  
-  # Task for generating CSV files
-  generate_csv_task = generate_csv_files()
-  
-  # Task for loading CSV data into Neo4j
-  load_neo4j_task = load_into_neo4j_task()
-
-  # Task for running Cypher queries
-  run_cypher_queries_task = run_cypher_queries()
-
- 
   complete_chunk_task = complete_chunk()
 
-  extract_chunk_task >> check_for_chunks_to_process >> generate_csv_task >> load_neo4j_task >> run_cypher_queries_task >> complete_chunk_task
+  extract_chunk_task >> check_for_chunks_to_process >> process_authors_task >> process_submissions_task >> process_citations_task >> complete_chunk_task
+
 
 etl_submissions()

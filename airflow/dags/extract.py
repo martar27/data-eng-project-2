@@ -89,7 +89,7 @@ def extract_cited_publications(og_df):
 def extract_and_save_citations(chunk_id, output_dir): #---------------
     # Assuming extract_citations_from_crossref is modified to return the required DataFrame
     # and 'doi_df' is obtained from somewhere within your DAG execution context
-    doi_df = extract_submission_doi(chunk_id)  # Just an example, replace with actual call
+    doi_df = extract_submission_doi(chunk_id)
     citations_df = extract_citations_from_crossref(doi_df)
 
     # Flatten the one-to-many relationship into pairs
